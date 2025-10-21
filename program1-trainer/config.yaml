@@ -1,0 +1,39 @@
+# PathoPulse Trainer Configuration
+version: "1.0.0"
+
+# Paths
+paths:
+  dataset_root: "data"
+  split_output: "dataset_split"
+  models_output: "models"
+  templates: "templates"
+
+# Data Split Configuration
+split:
+  test_size: 0.2
+  random_seed: 42
+
+# Model Configuration
+model:
+  input_size: [224, 224, 3]
+  backbone: "ResNet50"
+  pretrained: "imagenet"
+
+# Training Configuration
+training:
+  batch_size: 32
+  initial_epochs: 5
+  fine_tune_epochs: 20
+  initial_learning_rate: 0.001
+  fine_tune_learning_rate: 0.0001
+  early_stopping_patience: 5
+
+# Data Augmentation
+augmentation:
+  enabled: true
+  rotation_range: 15
+  horizontal_flip: true
+  vertical_flip: true
+  zoom_range: 0.1
+  brightness_range: [0.9, 1.1]
+  contrast_range: [0.9, 1.1]
