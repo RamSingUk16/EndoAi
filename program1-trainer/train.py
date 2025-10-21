@@ -180,6 +180,17 @@ def main():
         print(f"NE subtype sample (first 10): {ne[:10]}")
         print(f"EH subtype sample (first 10): {eh[:10]}")
 
+    # Build model and run a forward pass on the same batch to verify outputs
+    from model import build_model
+
+    print("Instantiating model...")
+    model = build_model()
+    # Run forward pass
+    outputs = model(imgs, training=False)
+    print("Model forward pass complete. Head output shapes:")
+    for name, out in zip(['main', 'ne_sub', 'eh_sub'], outputs):
+        print(f" - {name}: {out.shape}")
+
 
 if __name__ == '__main__':
     main()
