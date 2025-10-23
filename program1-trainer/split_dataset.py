@@ -7,7 +7,41 @@ import shutil
 import random
 import json
 import yaml
+import pandas as pd
 from pathlib import Path
+import constants
+
+
+def load_split_manifest(manifest_path):
+    """Load and parse the split manifest CSV file.
+    
+    Returns:
+        train_df, val_df: DataFrames containing file paths and labels
+    """
+    df = pd.read_csv(manifest_path)
+    manifest_dir = os.path.dirname(manifest_path)
+    
+    # Fix file paths to use dataset_split directory
+    df['file_path'] = df.apply(
+        lambda x: os.path.join(manifest_dir, x['split'], x['class'], 
+                             x['subtype'] if pd.notna(x['subtype']) else '',
+                             os.path.basename(x['file_path'])), axis=1)
+    
+    # Create label mappings
+    class_to_idx = {cls: idx for idx, cls in enumerate(constants.CLASS_ORDER)}
+    ne_to_idx = {sub: idx for idx, sub in enumerate(constants.NE_SUBTYPES)}
+    eh_to_idx = {sub: idx for idx, sub in enumerate(constants.EH_SUBTYPES)}
+    
+    # Extract main and subtype labels
+    df['main_label'] = df['class'].apply(lambda x: class_to_idx[x])
+    df['ne_subtype'] = df.apply(lambda x: ne_to_idx[x['subtype']] if x['class'] == 'NE' else -1, axis=1)
+    df['eh_subtype'] = df.apply(lambda x: eh_to_idx[x['subtype']] if x['class'] == 'EH' else -1, axis=1)
+    
+    # Split into train/test
+    train_df = df[df['split'] == 'train'].copy()
+    val_df = df[df['split'] == 'test'].copy()
+    
+    return train_df, val_df
 
 def load_config():
     with open("config.yaml", "r") as f:
@@ -64,6 +98,7 @@ def create_split_dirs(output_dir):
 
 def split_and_copy(image_data, output_dir, test_ratio=0.2):
     split_info = {'train': {}, 'test': {}}
+    manifest_data = []
     
     for class_name, subtypes in image_data.items():
         split_info['train'][class_name] = {}
@@ -84,24 +119,40 @@ def split_and_copy(image_data, output_dir, test_ratio=0.2):
             split_info['train'][class_name][subtype] = len(train_files)
             split_info['test'][class_name][subtype] = len(test_files)
             
-            # Copy files
+            # Copy files and create manifest entries
             dst_base = class_name if subtype == '' else os.path.join(class_name, subtype)
             
             print(f"Copying {len(train_files)} training and {len(test_files)} test files for {class_name}/{subtype}")
             
-            # Copy training files
+            # Handle training files
             for src in train_files:
                 dst = os.path.join(output_dir, 'train', dst_base, os.path.basename(src))
                 shutil.copy2(src, dst)
+                manifest_data.append({
+                    'file_path': os.path.join('train', dst_base, os.path.basename(src)),
+                    'class': class_name,
+                    'subtype': subtype if subtype else '',
+                    'split': 'train'
+                })
             
-            # Copy test files
+            # Handle test files
             for src in test_files:
                 dst = os.path.join(output_dir, 'test', dst_base, os.path.basename(src))
                 shutil.copy2(src, dst)
+                manifest_data.append({
+                    'file_path': os.path.join('test', dst_base, os.path.basename(src)),
+                    'class': class_name,
+                    'subtype': subtype if subtype else '',
+                    'split': 'test'
+                })
     
     # Save split info
     with open(os.path.join(output_dir, 'split_info.json'), 'w', encoding='utf-8') as f:
         json.dump(split_info, f, indent=2)
+        
+    # Save manifest
+    manifest_df = pd.DataFrame(manifest_data)
+    manifest_df.to_csv(os.path.join(output_dir, 'split_manifest.csv'), index=False)
 
 def main():
     # Load configuration

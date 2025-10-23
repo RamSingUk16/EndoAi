@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# Data and models
+data/
+data/**/*.jpg
+data/**/*.jpeg
+data/**/*.png
+dataset_split/
+dataset_split/**/*.jpg
+dataset_split/**/*.jpeg
+dataset_split/**/*.png
+models/*.h5
+models/*.pth
+models/*.ckpt
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.log
+*.tmp
+
+# Training outputs
+training_analysis/
+eval_results/
+confidence_analysis/
+
+# Keep empty directories with .gitkeep
+!data/.gitkeep
+!models/.gitkeep
+!logs/.gitkeep

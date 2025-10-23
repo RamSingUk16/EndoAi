@@ -14,6 +14,11 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+def clean_filename(filename: str) -> bool:
+    """Check if filename contains problematic characters."""
+    problematic = ['²', '⌐', 'ú']
+    return not any(c in filename for c in problematic)
+
 def load_config() -> dict:
     """Load configuration from config.yaml."""
     with open("config.yaml", "r") as f:
@@ -89,10 +94,10 @@ def create_split_directories(output_dir: str) -> None:
                     Path(output_dir, split, class_name, subtype).mkdir(parents=True, exist_ok=True)
             else:
                 Path(output_dir, split, class_name).mkdir(parents=True, exist_ok=True)
-
+                            image_files[class_name][subtype].extend([str(f) for f in subtype_path.glob("*.JPG") if clean_filename(str(f))])
 def copy_files(files: List[str], src_root: str, dst_root: str) -> None:
     """Copy files from source to destination, preserving relative paths."""
-    for file_path in files:
+                        image_files[class_name][''].extend([str(f) for f in class_path.glob("*.JPG") if clean_filename(str(f))])
         rel_path = os.path.relpath(file_path, src_root)
         dst_path = os.path.join(dst_root, rel_path)
         os.makedirs(os.path.dirname(dst_path), exist_ok=True)
@@ -101,7 +106,7 @@ def copy_files(files: List[str], src_root: str, dst_root: str) -> None:
 def generate_manifest(split_data: Dict[str, Dict[str, Tuple[List[str], List[str]]]], output_dir: str) -> None:
     """Generate CSV manifest and JSON summary of the split."""
     # Generate CSV manifest
-    with open(os.path.join(output_dir, 'split_manifest.csv'), 'w', newline='') as f:
+        with open(os.path.join(output_dir, 'split_manifest.csv'), 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['file_path', 'class', 'subtype', 'split'])
         
