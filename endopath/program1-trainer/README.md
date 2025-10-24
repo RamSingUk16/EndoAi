@@ -4,8 +4,11 @@ Model training component for the PathoPulse project - an endometrial tissue slid
 
 ## Quick Start
 
-1. Ensure you have Python 3.10+ installed
-2. Create and activate a virtual environment:
+1. Ensure you have Python 3.11 installed (TensorFlow 2.15 supports up to Python 3.11 on Windows)
+    - Windows (PowerShell):
+       - Install via winget: `winget install -e --id Python.Python.3.11`
+       - Verify: `py -3.11 --version`
+2. Create and activate a virtual environment (recommended name: venv311):
    ```bash
    python -m venv venv
    .\venv\Scripts\activate  # Windows
@@ -20,6 +23,8 @@ Model training component for the PathoPulse project - an endometrial tissue slid
    python -c "import tensorflow as tf; print(tf.__version__)"
    ```
    Should print version 2.15.*
+
+Note: If your workspace already has a different venv (e.g., Python 3.14), create a new one with Python 3.11 and use that interpreter for training and the backend server so TensorFlow can import correctly.
 
 ## Project Structure
 
@@ -76,3 +81,8 @@ The training process generates:
 - Model metadata (`models/metadata_v1.0.0.json`)
 - Training and evaluation reports (PDFs)
 - Performance plots and visualizations
+
+## Troubleshooting
+
+- TensorFlow fails to import: ensure you are using Python 3.11 and that `tensorflow==2.15.*` is installed in that environment.
+- GPU vs CPU: This setup uses the CPU build (`tensorflow-intel`) by default on Windows. For GPU acceleration, install the correct CUDA/cuDNN stack compatible with TF 2.15 and the corresponding `tensorflow` package.
