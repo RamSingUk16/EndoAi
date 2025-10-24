@@ -90,6 +90,57 @@ def preprocess_image(image_data: bytes) -> Optional[np.ndarray]:
         return None
 
 
+def generate_mock_gradcam(image_data: bytes) -> Optional[bytes]:
+    """
+    Generate a mock GradCAM visualization for development/testing.
+    
+    Args:
+        image_data: Original JPEG image bytes
+        
+    Returns:
+        Mock GradCAM JPEG bytes with a colored overlay
+    """
+    try:
+        from PIL import Image, ImageDraw
+        import io
+        
+        # Load original image
+        img = Image.open(io.BytesIO(image_data))
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Resize to standard size
+        img = img.resize((224, 224))
+        
+        # Create a semi-transparent red overlay in the center (mock heatmap)
+        overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+        
+        # Draw a gradient-like circle in the center (mock attention area)
+        center_x, center_y = 112, 112
+        for radius in range(60, 0, -5):
+            alpha = int(255 * (60 - radius) / 60 * 0.6)  # Fade from center
+            draw.ellipse(
+                [center_x - radius, center_y - radius, 
+                 center_x + radius, center_y + radius],
+                fill=(255, 0, 0, alpha)
+            )
+        
+        # Blend overlay with original
+        img = img.convert('RGBA')
+        img = Image.alpha_composite(img, overlay)
+        img = img.convert('RGB')
+        
+        # Convert to JPEG bytes
+        buffer = io.BytesIO()
+        img.save(buffer, format='JPEG', quality=90)
+        return buffer.getvalue()
+        
+    except Exception as e:
+        logger.error(f"Failed to generate mock GradCAM: {e}")
+        return None
+
+
 def run_inference(case_id: str):
     """
     Run inference on a case and update the database with results.
@@ -129,7 +180,11 @@ def run_inference(case_id: str):
             logger.warning(f"Using mock inference for case {case_id}")
             prediction = "benign"  # Mock result
             confidence = 0.85
+            
+            # Generate mock GradCAM for development
             gradcam_data = None
+            if gradcam_requested in ['auto', 'on']:
+                gradcam_data = generate_mock_gradcam(image_data)
         else:
             # Real inference
             predictions = model.predict(processed_image)
