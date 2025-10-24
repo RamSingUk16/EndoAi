@@ -9,11 +9,11 @@ This file was generated from `prompt_plan_backend_frontend.md` and `todo_backend
 ---
 
 ## Backend — Scaffolding & Core
-- [ ] Create project tree `program2-backend/` with `app/`, `models/`, `requirements.txt`, `README.md`.
+- [ ] Create project tree `endopath/endoserver/` with `app/`, `models/`, `requirements.txt`, `README.md`.
 - [ ] Add `.env` with PORT, DB_PATH, MODEL_DIR, thresholds, SESSION_TTL_MINUTES.
-- [ ] Implement `program2-backend/app/main.py` mounting `static/` and exposing `/health` and `/version`.
+- [ ] Implement `endopath/endoserver/app/main.py` mounting `static/` and exposing `/health` and `/version`.
 - [ ] Create `config.py` to load `.env`.
-- [ ] Create `program2-backend/app/init_db.py` to create SQLite DB and seed users.
+- [ ] Create `endopath/endoserver/app/init_db.py` to create SQLite DB and seed users.
 - [ ] Verify: run server and confirm `/health` -> {"status":"ok"}.
 
 ## Backend — Database & Auth
@@ -24,7 +24,7 @@ This file was generated from `prompt_plan_backend_frontend.md` and `todo_backend
 
 ## Backend — Upload, Inference & Worker
 - [ ] Implement `POST /cases` (multipart) to accept JPEG ≤10 MB, store image BLOB, metadata, set `status=processing` and return `{id}`.
-- [ ] Add model directory `program2-backend/models/` and copy latest `.h5` there.
+- [ ] Add model directory `endopath/endoserver/models/` and copy latest `.h5` there.
 - [ ] Implement `inference.py` to load newest `.h5` at startup (singleton), preprocess to 224×224, predict classes/subtypes, compute EH↔EA delta/ratio, and apply thresholds.
 - [ ] Implement `worker.py` (BackgroundTask) to run inference asynchronously and update case status to `ready`.
 
@@ -43,7 +43,7 @@ This file was generated from `prompt_plan_backend_frontend.md` and `todo_backend
 - [ ] Implement `pdf.py` to render a clinical PDF report (WeasyPrint) named `Slide<ID>_Report.pdf` and endpoint `GET /cases/{id}/report`.
 
 ## Frontend — Setup & Tooling
-- [ ] Create `program3-frontend/` with `login.html`, `upload.html`, `results.html`, `admin.html` and assets (`css/`, `js/`).
+- [ ] Create `endoui/` with `login.html`, `upload.html`, `results.html`, `admin.html` and assets (`css/`, `js/`).
 - [ ] Add local `css/bootstrap.min.css` and `js/lib/chart.umd.min.js`.
 - [ ] Configure `.eslintrc.json` and `vitest.config.js` for linting and tests.
 - [ ] Implement `js/utils.js` and `js/api.js` (fetch wrappers with credentials + toasts).

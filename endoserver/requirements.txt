@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-multipart
+bcrypt
+python-dotenv
+pydantic
+jinja2
+weasyprint
+Pillow
+numpy
+tensorflow==2.15.*
