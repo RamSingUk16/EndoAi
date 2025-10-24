@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EndoUI — Upload</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Upload Slide</h1>
+    <form id="uploadForm">
+      <label>Select JPEG (≤ 10MB)
+        <input type="file" name="image" accept="image/jpeg" required />
+      </label>
+      <label>Specimen ID
+        <input type="text" name="specimen_id" />
+      </label>
+      <label>Notes
+        <textarea name="notes"></textarea>
+      </label>
+      <button type="submit">Upload</button>
+    </form>
+    <div id="result" aria-live="polite"></div>
+    <p><a href="results.html">View results</a></p>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/upload.js"></script>
+</body>
+</html>
