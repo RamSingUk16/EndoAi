@@ -43,15 +43,22 @@ def create_tables(conn: sqlite3.Connection) -> None:
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS cases (
-            id INTEGER PRIMARY KEY,
-            owner_id INTEGER NOT NULL,
+            id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            slide_id TEXT UNIQUE NOT NULL,
+            patient_id TEXT NOT NULL,
+            age INTEGER,
+            clinical_history TEXT,
+            image_data BLOB NOT NULL,
             filename TEXT,
-            image_blob BLOB,
-            status TEXT DEFAULT 'processing',
-            probs_json TEXT,
-            data_quality_json TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE
+            gradcam_requested TEXT DEFAULT 'auto',
+            gradcam_data BLOB,
+            status TEXT DEFAULT 'pending',
+            prediction TEXT,
+            confidence REAL,
+            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            processed_at TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
         """
     )
