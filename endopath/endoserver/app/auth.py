@@ -98,6 +98,37 @@ def get_current_user(request: Request) -> Optional[dict]:
 
 
 @router.get('/auth/session')
+def get_session(request: Request):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail='Not authenticated')
+    return {'username': user['username'], 'is_admin': user['is_admin']}
+
+
+def require_auth(request: Request) -> dict:
+    """
+    Dependency that requires authentication.
+    Raises 401 if not authenticated.
+    Returns the current user dict.
+    """
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail='Authentication required')
+    return user
+
+
+def require_admin(request: Request) -> dict:
+    """
+    Dependency that requires admin authentication.
+    Raises 401 if not authenticated, 403 if not admin.
+    Returns the current user dict.
+    """
+    user = require_auth(request)
+    if not user['is_admin']:
+        raise HTTPException(status_code=403, detail='Admin access required')
+    return user
+
+
 def session_info(request: Request):
     user = get_current_user(request)
     if not user:
@@ -105,4 +136,4 @@ def session_info(request: Request):
     return user
 
 
-__all__ = ['router', 'get_current_user']
+__all__ = ['router', 'get_current_user', 'require_auth', 'require_admin']

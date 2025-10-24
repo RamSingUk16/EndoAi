@@ -4,8 +4,13 @@ Run: python endopath/endoserver/app/init_db.py
 """
 import bcrypt
 import os
-from .db import get_conn, create_tables
-from .config import settings
+import sys
+
+# Add parent directory to Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from endoserver.app.db import get_conn, create_tables
+from endoserver.app.config import settings
 
 
 def seed_users(conn):
