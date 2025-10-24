@@ -164,9 +164,10 @@ def create_callbacks(config, model_name="model"):
     callbacks.append(checkpoint)
     
     # Early stopping to prevent overfitting
+    patience = config.get('training', {}).get('early_stopping_patience', 5)
     early_stopping = tf.keras.callbacks.EarlyStopping(
         monitor='val_loss',
-        patience=5,  # Use config value if available
+        patience=patience,  # configurable
         restore_best_weights=True,
         mode='min',
         verbose=1,
@@ -178,21 +179,21 @@ def create_callbacks(config, model_name="model"):
     reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.5,
-        patience=3,  # Use config value if available
+        patience=max(1, patience - 2),  # tie to early stopping for fast runs
         min_lr=1e-6,
         mode='min',
         verbose=1
     )
     callbacks.append(reduce_lr)
     
-    # TensorBoard logging
-    log_dir = os.path.join("logs", datetime.now().strftime("%Y%m%d-%H%M%S"))
-    tensorboard = tf.keras.callbacks.TensorBoard(
-        log_dir=log_dir,
-        histogram_freq=1,
-        write_graph=True
-    )
-    callbacks.append(tensorboard)
+    # TensorBoard logging (disabled to avoid serialization issues in some TF versions)
+    # log_dir = os.path.join("logs", datetime.now().strftime("%Y%m%d-%H%M%S"))
+    # tensorboard = tf.keras.callbacks.TensorBoard(
+    #     log_dir=log_dir,
+    #     histogram_freq=1,
+    #     write_graph=True
+    # )
+    # callbacks.append(tensorboard)
     
     return callbacks
 
@@ -414,11 +415,23 @@ def train_model(model: tf.keras.Model,
     
     print("Initial training phase (backbone frozen)...")
     # Pass class_weights for main head only (subtypes use masking)
+    # Optional fast mode to limit steps per epoch for quick smoke tests
+    fast_cfg = config.get('training', {})
+    steps_per_epoch = fast_cfg.get('steps_per_epoch')
+    validation_steps = fast_cfg.get('validation_steps')
+
+    fit_kwargs = {}
+    if steps_per_epoch:
+        fit_kwargs['steps_per_epoch'] = steps_per_epoch
+    if validation_steps:
+        fit_kwargs['validation_steps'] = validation_steps
+
     history = model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=initial_epochs,
-        callbacks=callbacks
+        callbacks=callbacks,
+        **fit_kwargs
     )
     
     # Fine-tuning phase
@@ -438,7 +451,8 @@ def train_model(model: tf.keras.Model,
         validation_data=val_ds,
         epochs=initial_epochs + fine_tune_epochs,
         initial_epoch=initial_epochs,
-        callbacks=callbacks
+        callbacks=callbacks,
+        **fit_kwargs
     )
     
     # Combine histories
@@ -503,12 +517,32 @@ def main():
     print("\nBuilding and training model...")
     model = build_model(config)
 
+    # Ensure models directory and model path are known
+    models_dir = config.get('paths', {}).get('models_output', 'models')
+    os.makedirs(models_dir, exist_ok=True)
+    model_path = os.path.join(models_dir, f"model_{VERSION}.h5")
+
+    # Optionally save an initial model (untrained) so backend can load immediately
+    if config.get('training', {}).get('save_initial_model', False):
+        try:
+            model.save(model_path)
+            print(f"Saved initial (untrained) model to: {model_path}")
+        except Exception as e:
+            print(f"Warning: could not save initial model: {e}")
+
     # Train model
     model, history = train_model(model, train_ds, test_ds,
                              class_weights, config)
 
     # Save metadata
-    model_path = f"models/model_{VERSION}.h5"
+    # Ensure a model file exists even if callbacks did not trigger
+    try:
+        if not os.path.exists(model_path):
+            model.save(model_path)
+            print(f"Forced save model to: {model_path}")
+    except Exception as e:
+        print(f"Warning: could not save trained model: {e}")
+
     save_metadata(config, model_path, class_weights,
                train_counts, test_counts, history)
 

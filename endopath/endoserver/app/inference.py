@@ -2,6 +2,8 @@
 import logging
 from datetime import datetime
 from typing import Optional
+import os
+import glob
 import numpy as np
 from .db import get_conn
 from .config import settings
@@ -17,7 +19,13 @@ class ModelLoader:
         self._loaded = False
     
     def load_model(self):
-        """Load the TensorFlow model from disk."""
+        """Load the TensorFlow model from disk.
+
+        Strategy:
+        - Search settings.MODEL_DIR for the newest .h5 file
+        - Load it via keras.models.load_model
+        - If none found or load fails, fall back to mock inference
+        """
         if self._loaded:
             return self._model
         
@@ -25,10 +33,15 @@ class ModelLoader:
             # Import TensorFlow only when needed
             import tensorflow as tf
             from tensorflow import keras
-            
-            model_path = f"{settings.MODEL_DIR}/endometrial_model.h5"
+            model_dir = settings.MODEL_DIR
+            os.makedirs(model_dir, exist_ok=True)
+            candidates = sorted(glob.glob(os.path.join(model_dir, "*.h5")), key=os.path.getmtime, reverse=True)
+            if not candidates:
+                raise FileNotFoundError(f"No .h5 models found in {model_dir}")
+
+            model_path = candidates[0]
             logger.info(f"Loading model from {model_path}")
-            
+
             self._model = keras.models.load_model(model_path)
             self._loaded = True
             logger.info("Model loaded successfully")
