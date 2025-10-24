@@ -13,13 +13,48 @@
       <label>Select JPEG (≤ 10MB)
         <input type="file" name="image" accept="image/jpeg" required />
       </label>
+
       <label>Specimen ID
         <input type="text" name="specimen_id" />
       </label>
+
+      <label>Age Group
+        <select name="age_group">
+          <option value="unknown">Unknown</option>
+          <option value="<18">&lt;18</option>
+          <option value="18-30">18-30</option>
+          <option value="31-45">31-45</option>
+          <option value="46-60">46-60</option>
+          <option value=">60">&gt;60</option>
+        </select>
+      </label>
+
+      <label>Menstrual phase
+        <select name="menstrual_phase">
+          <option value="unknown">Unknown</option>
+          <option value="proliferative">Proliferative</option>
+          <option value="secretory">Secretory</option>
+          <option value="postmenopausal">Postmenopausal</option>
+        </select>
+      </label>
+
+      <label>Magnification
+        <input type="text" name="magnification" placeholder="e.g., 10x" />
+      </label>
+
+      <label>Stain
+        <input type="text" name="stain" placeholder="e.g., H&E" />
+      </label>
+
       <label>Notes
         <textarea name="notes"></textarea>
       </label>
-      <button type="submit">Upload</button>
+
+      <label>
+        <input type="checkbox" name="gradcam" checked /> Generate Grad-CAM (auto)
+      </label>
+
+      <button type="submit" id="uploadBtn">Upload</button>
     </form>
     <div id="result" aria-live="polite"></div>
     <p><a href="results.html">View results</a></p>
