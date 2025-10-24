@@ -3,12 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EndoUI — Upload</title>
+  <title>EndoAI — Upload</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <main class="container">
-    <h1>Upload Slide</h1>
+    <div class="page-header">
+      <h1>Upload Slide</h1>
+      <p>Upload endometrial pathology images for AI-powered analysis</p>
+      <div style="margin-top: 1rem;">
+        <a href="index.html" style="margin-right: 1rem; color: var(--accent); text-decoration: none; font-weight: 600;">← Home</a>
+        <a href="results.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">View Results →</a>
+      </div>
+    </div>
+    
     <form id="uploadForm">
       <label>Select JPEG (≤ 10MB)
         <input type="file" name="image" accept="image/jpeg" required />
@@ -57,18 +65,16 @@
       <button type="submit" id="uploadBtn">Upload</button>
     </form>
     <div id="result" aria-live="polite"></div>
-    <p><a href="results.html">View results</a></p>
   </main>
 
-  <script>
-    // nav placeholder (optional)
-    const nav = document.createElement('div')
-    nav.id = 'nav'
-    document.body.insertBefore(nav, document.body.firstChild)
-  </script>
-
   <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/upload.js"></script>
+  <script>
+    // Initialize navbar
+    renderNavbar('upload');
+  </script>
 </body>
 </html>

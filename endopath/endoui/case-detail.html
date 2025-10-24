@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EndoAI — Case Details</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .detail-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: sticky;
+      top: 1rem;
+      align-self: start;
+    }
+    .detail-section {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .detail-section h2 {
+      margin: 0 0 1rem 0;
+      color: var(--accent);
+      font-size: 1.25rem;
+    }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 1rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    .detail-label {
+      font-weight: 600;
+      color: var(--text-light);
+    }
+    .detail-value {
+      color: var(--text);
+    }
+    .image-container {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .image-container h3 {
+      margin: 0 0 1rem 0;
+      color: var(--accent);
+    }
+    .image-container img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    @media (max-width: 1024px) {
+      .detail-container {
+        grid-template-columns: 1fr;
+      }
+      .right-column {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <h1>Case Details</h1>
+      <p>Complete information for case <strong id="caseId"></strong></p>
+      <div style="margin-top: 1rem;">
+        <a href="results.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← Back to Results</a>
+      </div>
+    </div>
+
+    <div id="loading">Loading case details...</div>
+    <div id="error" style="display: none; color: var(--error);"></div>
+    
+    <div id="caseContent" style="display: none;">
+      <div class="detail-container">
+        <!-- Left Column: Case Information -->
+        <div class="left-column">
+          <div class="detail-section">
+            <h2>Case Information</h2>
+            <div class="detail-row">
+              <div class="detail-label">Slide ID:</div>
+              <div class="detail-value" id="slideId"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Patient ID:</div>
+              <div class="detail-value" id="patientId"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Status:</div>
+              <div class="detail-value" id="status"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Uploaded:</div>
+              <div class="detail-value" id="uploadedAt"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Uploaded By:</div>
+              <div class="detail-value" id="userId"></div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h2>Analysis Results</h2>
+            <div class="detail-row">
+              <div class="detail-label">Prediction:</div>
+              <div class="detail-value" id="prediction"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Confidence:</div>
+              <div class="detail-value" id="confidence"></div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h2>Clinical Information</h2>
+            <div class="detail-row">
+              <div class="detail-label">Age Group:</div>
+              <div class="detail-value" id="ageGroup"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Menstrual Phase:</div>
+              <div class="detail-value" id="menstrualPhase"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Magnification:</div>
+              <div class="detail-value" id="magnification"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Stain:</div>
+              <div class="detail-value" id="stain"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Notes:</div>
+              <div class="detail-value" id="notes"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Images -->
+        <div class="right-column">
+          <div class="image-container">
+            <h3>Original Image</h3>
+            <img id="originalImage" src="" alt="Original slide image" />
+            <div id="originalImageError" style="display: none; color: var(--error); margin-top: 1rem;">Image not available</div>
+          </div>
+          
+          <div class="image-container" id="gradcamContainer" style="display: none;">
+            <h3>GradCAM Visualization</h3>
+            <img id="gradcamImage" src="" alt="GradCAM heatmap" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    // Initialize navbar
+    renderNavbar('details');
+
+    // Get case ID from URL
+    const params = new URLSearchParams(window.location.search);
+    const caseId = params.get('id');
+    
+    if (!caseId) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('error').textContent = 'No case ID provided';
+    } else {
+      document.getElementById('caseId').textContent = caseId;
+      loadCaseDetails(caseId);
+    }
+
+    async function loadCaseDetails(id) {
+      try {
+        // Load case metadata
+        const response = await API.get('/cases');
+        const cases = response.cases || response;
+        const caseData = cases.find(c => c.id === id);
+        
+        if (!caseData) {
+          throw new Error('Case not found');
+        }
+
+        // Populate case information
+        document.getElementById('slideId').textContent = caseData.slide_id || id;
+        document.getElementById('patientId').textContent = caseData.patient_id || 'N/A';
+        document.getElementById('status').innerHTML = `<span class="status-${caseData.status || 'unknown'}">${caseData.status || 'unknown'}</span>`;
+        document.getElementById('uploadedAt').textContent = caseData.uploaded_at ? new Date(caseData.uploaded_at).toLocaleString() : 'N/A';
+        document.getElementById('userId').textContent = caseData.user_id || 'N/A';
+        
+        // Populate analysis results
+        document.getElementById('prediction').textContent = caseData.prediction || 'Pending';
+        document.getElementById('confidence').textContent = caseData.confidence ? (caseData.confidence * 100).toFixed(1) + '%' : 'N/A';
+        
+        // Parse clinical history into separate fields
+        const clinicalHistory = caseData.clinical_history || '';
+        const ageGroupMatch = clinicalHistory.match(/Age group:\s*([^;]+)/);
+        const menstrualMatch = clinicalHistory.match(/Menstrual phase:\s*([^;]+)/);
+        const magnificationMatch = clinicalHistory.match(/Magnification:\s*([^;]+)/);
+        const stainMatch = clinicalHistory.match(/Stain:\s*([^;]+)/);
+        
+        // Extract notes (everything after the structured fields)
+        let notes = clinicalHistory;
+        notes = notes.replace(/Age group:\s*[^;]+;\s*/g, '');
+        notes = notes.replace(/Menstrual phase:\s*[^;]+;\s*/g, '');
+        notes = notes.replace(/Magnification:\s*[^;]+;\s*/g, '');
+        notes = notes.replace(/Stain:\s*[^;]+;\s*/g, '');
+        notes = notes.trim();
+        
+        document.getElementById('ageGroup').textContent = ageGroupMatch ? ageGroupMatch[1].trim() : 'Not specified';
+        document.getElementById('menstrualPhase').textContent = menstrualMatch ? menstrualMatch[1].trim() : 'Not specified';
+        document.getElementById('magnification').textContent = magnificationMatch ? magnificationMatch[1].trim() : 'Not specified';
+        document.getElementById('stain').textContent = stainMatch ? stainMatch[1].trim() : 'Not specified';
+        document.getElementById('notes').textContent = notes || 'No notes provided';
+        
+        // Load original image
+        const originalImg = document.getElementById('originalImage');
+        const originalError = document.getElementById('originalImageError');
+        const imageUrl = `/cases/${id}/image`;
+        console.log('Loading original image from:', imageUrl);
+        originalImg.src = imageUrl;
+        originalImg.onerror = (e) => {
+          console.error('Failed to load original image:', e);
+          originalImg.style.display = 'none';
+          originalError.style.display = 'block';
+        };
+        originalImg.onload = () => {
+          console.log('Original image loaded successfully');
+          originalImg.style.display = 'block';
+          originalError.style.display = 'none';
+        };
+        
+        // Load GradCAM if available
+        if (caseData.gradcam_data || caseData.status === 'completed') {
+          const gradcamContainer = document.getElementById('gradcamContainer');
+          const gradcamImg = document.getElementById('gradcamImage');
+          gradcamContainer.style.display = 'block';
+          gradcamImg.src = `/cases/${id}/gradcam`;
+          gradcamImg.onerror = () => {
+            gradcamContainer.style.display = 'none';
+          };
+        }
+        
+        // Show content, hide loading
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('caseContent').style.display = 'block';
+        
+      } catch (err) {
+        console.error('Error loading case:', err);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = 'Failed to load case details: ' + err.message;
+      }
+    }
+  </script>
+</body>
+</html>

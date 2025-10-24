@@ -50,6 +50,9 @@ async def upload_case(
     if gradcam not in ['auto', 'on', 'off']:
         raise HTTPException(status_code=400, detail='gradcam must be "auto", "on", or "off"')
     
+    # Debug logging
+    print(f"DEBUG: Uploading case - patient_id={patient_id}, age={age}, clinical_history={clinical_history}")
+    
     # Generate case ID
     case_id = str(uuid.uuid4())
     slide_id = f"SLIDE-{uuid.uuid4().hex[:8].upper()}"
@@ -103,7 +106,7 @@ def get_case(case_id: str, user: dict = Depends(require_auth)):
     
     # Get case info (excluding image_data)
     cur.execute('''
-        SELECT id, slide_id, patient_id, age, clinical_history,
+        SELECT id, user_id, slide_id, patient_id, age, clinical_history,
                filename, gradcam_requested, status, prediction,
                confidence, uploaded_at, processed_at
         FROM cases
@@ -132,16 +135,16 @@ def list_cases(limit: int = 50, offset: int = 0, user: dict = Depends(require_au
     # Admins see all cases, regular users see only their own
     if user['is_admin']:
         cur.execute('''
-            SELECT id, slide_id, patient_id, status, prediction,
-                   confidence, uploaded_at, processed_at
+            SELECT id, user_id, slide_id, patient_id, clinical_history, 
+                   status, prediction, confidence, uploaded_at, processed_at
             FROM cases
             ORDER BY uploaded_at DESC
             LIMIT ? OFFSET ?
         ''', (limit, offset))
     else:
         cur.execute('''
-            SELECT id, slide_id, patient_id, status, prediction,
-                   confidence, uploaded_at, processed_at
+            SELECT id, user_id, slide_id, patient_id, clinical_history,
+                   status, prediction, confidence, uploaded_at, processed_at
             FROM cases
             WHERE user_id = ?
             ORDER BY uploaded_at DESC
@@ -149,7 +152,14 @@ def list_cases(limit: int = 50, offset: int = 0, user: dict = Depends(require_au
         ''', (user['id'], limit, offset))
     
     rows = cur.fetchall()
-    return {'cases': [dict(row) for row in rows]}
+    cases = [dict(row) for row in rows]
+    
+    # Debug logging
+    if cases:
+        print(f"DEBUG: Returning {len(cases)} cases")
+        print(f"DEBUG: First case clinical_history: {cases[0].get('clinical_history', 'N/A')}")
+    
+    return {'cases': cases}
 
 
 @router.get('/cases/{case_id}/gradcam')
@@ -184,3 +194,40 @@ def get_gradcam(case_id: str, user: dict = Depends(require_auth)):
     
     # Return JPEG image
     return Response(content=row['gradcam_data'], media_type='image/jpeg')
+
+
+@router.get('/cases/{case_id}/image')
+def get_original_image(case_id: str, user: dict = Depends(require_auth)):
+    """Get original image for a case."""
+    from fastapi.responses import Response
+    
+    print(f"DEBUG: Fetching image for case_id={case_id}")
+    
+    conn = get_conn()
+    cur = conn.cursor()
+    
+    # Get case with image_data
+    cur.execute('''
+        SELECT user_id, image_data
+        FROM cases
+        WHERE id = ?
+    ''', (case_id,))
+    
+    row = cur.fetchone()
+    if not row:
+        print(f"DEBUG: Case {case_id} not found")
+        raise HTTPException(status_code=404, detail='Case not found')
+    
+    # Check access
+    if row['user_id'] != user['id'] and not user['is_admin']:
+        print(f"DEBUG: Access denied for user {user['id']} to case owned by {row['user_id']}")
+        raise HTTPException(status_code=403, detail='Access denied')
+    
+    # Check if image is available
+    if not row['image_data']:
+        print(f"DEBUG: No image_data for case {case_id}")
+        raise HTTPException(status_code=404, detail='Image not found')
+    
+    print(f"DEBUG: Returning image for case {case_id}, size={len(row['image_data'])} bytes")
+    # Return JPEG image
+    return Response(content=row['image_data'], media_type='image/jpeg')

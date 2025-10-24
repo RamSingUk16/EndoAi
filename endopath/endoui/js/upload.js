@@ -9,29 +9,61 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (!file) return showMessage('Please choose a file', 'error')
     if (file.size > 10*1024*1024) return showMessage('File too large (max 10MB)', 'error')
 
-    // collect metadata
+    // collect metadata - updated to match backend API
     const fm = new FormData()
-    fm.append('image', file)
-    fm.append('specimen_id', form.specimen_id.value || '')
-    fm.append('age_group', form.age_group.value || 'unknown')
-    fm.append('menstrual_phase', form.menstrual_phase.value || 'unknown')
-    fm.append('magnification', form.magnification.value || '')
-    fm.append('stain', form.stain.value || '')
-    fm.append('notes', form.notes.value || '')
+    fm.append('file', file)  // Backend expects 'file'
+    fm.append('patient_id', form.specimen_id.value || 'UNKNOWN')  // Backend expects 'patient_id'
+    
+    // Map age_group to clinical_history since backend expects numeric age
+    const historyParts = []
+    if (form.age_group && form.age_group.value !== 'unknown') {
+      historyParts.push(`Age group: ${form.age_group.value}`)
+    }
+    if (form.menstrual_phase && form.menstrual_phase.value !== 'unknown') {
+      historyParts.push(`Menstrual phase: ${form.menstrual_phase.value}`)
+    }
+    if (form.magnification && form.magnification.value) {
+      historyParts.push(`Magnification: ${form.magnification.value}`)
+    }
+    if (form.stain && form.stain.value) {
+      historyParts.push(`Stain: ${form.stain.value}`)
+    }
+    if (form.notes && form.notes.value) {
+      historyParts.push(form.notes.value)
+    }
+    if (historyParts.length > 0) {
+      fm.append('clinical_history', historyParts.join('; '))
+    }
 
-    const gradcam = form.gradcam && form.gradcam.checked
+    const gradcam = form.gradcam && form.gradcam.checked ? 'on' : 'auto'
+    fm.append('gradcam', gradcam)
+    
+    // Debug: log what we're sending
+    console.log('Uploading with FormData:')
+    for (let pair of fm.entries()) {
+      console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]))
+    }
 
     // disable UI while uploading
     uploadBtn.disabled = true
     uploadBtn.textContent = 'Uploading...'
     try{
-      const path = '/cases' + (gradcam ? '?gradcam=auto' : '')
-      const json = await API.postForm(path, fm)
-      const id = json.id || json.slide || json.case_id || 'unknown'
-      showMessage('Uploaded: Slide ID '+id, 'success')
-      document.getElementById('result').innerHTML = `<a href="results.html">View results</a> — Slide ${id}`
+      const json = await API.postForm('/cases', fm)
+      const slideId = json.slide_id || json.id || 'unknown'
+      showMessage('✅ Successfully uploaded! Slide ID: ' + slideId, 'success')
+      document.getElementById('result').innerHTML = `
+        <div style="margin-top: 1rem; padding: 1rem; background: #e8f5e9; border-radius: 4px; border-left: 4px solid #4caf50;">
+          <strong>Upload Complete!</strong>
+          <div style="margin-top: 0.5rem;">Slide ID: <strong>${slideId}</strong></div>
+          <div style="margin-top: 0.5rem;">
+            <a href="results.html" style="color: #2b7cff; font-weight: 600;">→ View Results</a>
+          </div>
+        </div>
+      `
+      // Reset form
+      form.reset()
     }catch(err){
-      console.error(err)
+      console.error('Upload error:', err)
       showMessage('Upload failed: '+err.message, 'error')
     }finally{
       uploadBtn.disabled = false

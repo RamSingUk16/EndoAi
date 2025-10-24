@@ -3,25 +3,32 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EndoUI — Results</title>
+  <title>EndoAI — Results</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <main class="container">
-    <h1>Results</h1>
+    <div class="page-header">
+      <h1>Analysis Results</h1>
+      <p>View and manage your uploaded cases</p>
+      <div style="margin-top: 1rem;">
+        <a href="index.html" style="margin-right: 1rem; color: var(--accent); text-decoration: none; font-weight: 600;">← Home</a>
+        <a href="upload.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Upload New →</a>
+      </div>
+    </div>
+    
     <div id="summary"></div>
     <div id="cards" class="grid"></div>
   </main>
 
-  <script>
-    // nav placeholder (optional)
-    const nav = document.createElement('div')
-    nav.id = 'nav'
-    document.body.insertBefore(nav, document.body.firstChild)
-  </script>
-
   <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/results.js"></script>
+  <script>
+    // Initialize navbar
+    renderNavbar('results');
+  </script>
 </body>
 </html>

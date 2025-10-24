@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EndoAI — Home</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      margin-bottom: 3rem;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      margin: 0 0 1rem 0;
+    }
+    .hero p {
+      font-size: 1.25rem;
+      margin: 0;
+      opacity: 0.9;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .feature-card {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .feature-card h3 {
+      margin: 0 0 1rem 0;
+      color: var(--text);
+    }
+    .feature-card p {
+      color: var(--text-light);
+      margin: 0 0 1.5rem 0;
+    }
+    .btn-primary {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="hero">
+      <h1>🔬 EndoAI</h1>
+      <p>AI-Powered Endometrial Pathology Analysis</p>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">📤</div>
+        <h3>Upload Images</h3>
+        <p>Upload endometrial pathology slides in JPEG format for automated analysis</p>
+        <a href="upload.html" class="btn-primary">Upload Now</a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Analysis</h3>
+        <p>Advanced deep learning models analyze tissue samples and provide predictions</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>View Results</h3>
+        <p>Review analysis results, predictions, and GradCAM visualizations</p>
+        <a href="results.html" class="btn-primary">View Results</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    // Initialize navbar
+    renderNavbar('home');
+    
+    // Check if user is logged in, redirect to login if not
+    async function checkAuth() {
+      try {
+        const user = await getSession();
+        if (!user) {
+          window.location.href = 'login.html';
+        }
+      } catch (err) {
+        window.location.href = 'login.html';
+      }
+    }
+    checkAuth();
+  </script>
+</body>
+</html>
