@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EndoAI — About</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .section { background: var(--card); padding: 1.25rem 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.25rem; scroll-margin-top: 80px; }
+    .small { color: var(--text-light); font-size: 0.95rem; }
+    .kvs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+    .kv { background: #f8fafc; border: 1px solid var(--border); padding: 0.75rem 1rem; border-radius: 6px; }
+    .kv strong { display: block; font-size: 0.9rem; color: var(--text-light); }
+    .kv span { font-size: 1.05rem; color: var(--text); }
+    .note { background: #fff8e1; border: 1px solid #ffe082; color: #6d4c41; padding: 0.75rem 1rem; border-radius: 6px; }
+    .toc { background: #f8fafc; border: 1px solid var(--border); padding: 0.75rem 1rem; border-radius: 6px; }
+    .toc h2 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
+    .toc ul { margin: 0.25rem 0 0 0; padding-left: 1rem; }
+    .toc a { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <h1>About EndoAI</h1>
+      <p class="small">What this app is about, how to use it, and key terms in endometrial pathology.</p>
+    </div>
+
+    <div class="section toc">
+      <h2>On this page</h2>
+      <ul>
+        <li><a href="#what">What is EndoAI?</a></li>
+        <li><a href="#how-to">How to use</a></li>
+        <li><a href="#abbreviations">Abbreviations</a></li>
+        <li><a href="#classification">Classification overview</a></li>
+        <li><a href="#cancer-overview">Endometrial cancer overview</a></li>
+        <li><a href="#normal">Normal endometrium</a></li>
+        <li><a href="#polyp">Endometrial polyp</a></li>
+        <li><a href="#hyperplasia">Endometrial hyperplasia</a></li>
+        <li><a href="#adenocarcinoma">Endometrial adenocarcinoma</a></li>
+        <li><a href="#disclaimer">Disclaimer</a></li>
+      </ul>
+    </div>
+
+    <section class="section" id="what">
+      <h2>What is EndoAI?</h2>
+      <p>EndoAI is a research tool that analyzes endometrial pathology slide images and suggests one of four primary categories, with subtypes where available. It also generates a Grad-CAM heatmap that highlights regions likely influencing the prediction.</p>
+      <div class="kvs">
+        <div class="kv"><strong>Primary classes</strong><span>
+          NE (Normal Endometrium)<br />
+          EP (Endometrial Polyp)<br />
+          EH (Endometrial Hyperplasia)<br />
+          EA (Endometrial Adenocarcinoma)
+        </span></div>
+        <div class="kv"><strong>Subtypes</strong><span>NE: phase variants; EH: with or without atypia</span></div>
+        <div class="kv"><strong>Input</strong><span>JPEG, auto-resized to 224×224</span></div>
+        <div class="kv"><strong>Output</strong><span>Prediction, class confidences, Grad-CAM overlay</span></div>
+      </div>
+      <p class="small note"><strong>Important:</strong> This is not a medical device and is intended for research and educational use only. Clinical decisions must not be based on this tool.</p>
+    </section>
+
+    <section class="section" id="how-to">
+      <h2>How to use</h2>
+      <ol>
+        <li>Open <a href="upload.html">Upload</a> and select a JPEG (≤10MB). Fill optional metadata.</li>
+        <li>Submit. You'll be redirected to the case page.</li>
+        <li>Wait ~1–2 minutes for analysis on CPU. Refresh to view prediction, confidences, and Grad-CAM overlay.</li>
+        <li>Review past analyses in <a href="results.html">Results</a>.</li>
+      </ol>
+      <p class="small">Confidence is per-image probability, not overall model accuracy. See the model status shown on case pages for current validation accuracy.</p>
+    </section>
+
+    <section class="section" id="abbreviations">
+      <h2>Abbreviations</h2>
+      <ul>
+        <li><strong>NE</strong> — Normal Endometrium (e.g., proliferative, secretory, or atrophic patterns)</li>
+        <li><strong>EP</strong> — Endometrial Polyp</li>
+        <li><strong>EH</strong> — Endometrial Hyperplasia</li>
+        <li><strong>EA</strong> — Endometrial Adenocarcinoma</li>
+        <li><strong>Grad-CAM</strong> — Gradient-weighted Class Activation Mapping, a heatmap to visualize salient regions</li>
+      </ul>
+    </section>
+
+    <section class="section" id="classification">
+      <h2>Classification overview</h2>
+      <p class="small">Order used in this app (not a disease progression diagram): <strong>NE → EP → EH → EA</strong>. EH includes two subcategories.</p>
+      <div style="overflow:auto;">
+        <svg viewBox="0 0 980 180" width="100%" height="180" role="img" aria-label="Classification overview: NE, EP, EH with subtypes, EA">
+          <defs>
+            <linearGradient id="c1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#ecfeff"/><stop offset="100%" stop-color="#eff6ff"/></linearGradient>
+            <linearGradient id="c2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#eef2ff"/></linearGradient>
+            <linearGradient id="c3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#fff7ed"/><stop offset="100%" stop-color="#fffbeb"/></linearGradient>
+            <linearGradient id="c4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#fef2f2"/><stop offset="100%" stop-color="#fee2e2"/></linearGradient>
+            <style>
+              .bx { rx:12; ry:12; stroke:#cbd5e1; stroke-width:1; }
+              .tt { font: 600 14px 'Segoe UI', Arial; fill:#0f172a; }
+              .sd { font: 12px 'Segoe UI', Arial; fill:#334155; }
+              .sep { stroke:#94a3b8; stroke-width:1; }
+            </style>
+          </defs>
+          <!-- NE -->
+          <rect class="bx" x="20" y="30" width="200" height="70" fill="url(#c1)"/>
+          <text class="tt" x="35" y="55">NE</text>
+          <text class="sd" x="35" y="75">Normal Endometrium</text>
+          <!-- Separator -->
+          <line class="sep" x1="240" y1="30" x2="240" y2="100"/>
+          <!-- EP -->
+          <rect class="bx" x="260" y="30" width="200" height="70" fill="url(#c2)"/>
+          <text class="tt" x="275" y="55">EP</text>
+          <text class="sd" x="275" y="75">Endometrial Polyp (benign)</text>
+          <!-- Separator -->
+          <line class="sep" x1="480" y1="30" x2="480" y2="100"/>
+          <!-- EH with subtypes -->
+          <rect class="bx" x="500" y="20" width="220" height="100" fill="url(#c3)"/>
+          <text class="tt" x="515" y="45">EH</text>
+          <text class="sd" x="515" y="65">Endometrial Hyperplasia</text>
+          <!-- Sub-boxes -->
+          <rect class="bx" x="510" y="75" width="95" height="35" fill="#ffffff"/>
+          <text class="sd" x="518" y="95">w/o atypia</text>
+          <rect class="bx" x="615" y="75" width="95" height="35" fill="#ffffff"/>
+          <text class="sd" x="623" y="95">with atypia</text>
+          <!-- Separator -->
+          <line class="sep" x1="740" y1="30" x2="740" y2="100"/>
+          <!-- EA -->
+          <rect class="bx" x="760" y="30" width="200" height="70" fill="url(#c4)"/>
+          <text class="tt" x="775" y="55">EA</text>
+          <text class="sd" x="775" y="75">Endometrial Adenocarcinoma</text>
+        </svg>
+      </div>
+      <p class="small">EH “with atypia” is also termed AEH/EIN in many classifications; our current model has limited data for this subtype.</p>
+      <ul class="small">
+        <li><strong>NE — Normal Endometrium</strong>: physiologic phases include proliferative, secretory, and atrophic.</li>
+        <li><strong>EP — Endometrial Polyp</strong>: benign lesion; separate entity (not part of hyperplasia → carcinoma sequence).</li>
+        <li><strong>EH — Endometrial Hyperplasia</strong>:
+          <ul>
+            <li>without atypia: architectural changes; lower malignant potential.</li>
+            <li>with atypia (AEH/EIN): cytologic atypia; higher risk of progression.</li>
+          </ul>
+        </li>
+        <li><strong>EA — Endometrial Adenocarcinoma</strong>: malignant; staging requires clinicopathologic correlation.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="cancer-overview">
+      <h2>Endometrial cancer — basic overview</h2>
+      <p>Endometrial cancer originates from the lining of the uterus (endometrium). A commonly used clinical staging system is FIGO, which broadly includes:</p>
+      <ul>
+        <li><strong>Stage I</strong>: Tumor confined to the corpus uteri (IA/IB by depth of myometrial invasion)</li>
+        <li><strong>Stage II</strong>: Tumor invades cervical stroma but does not extend beyond the uterus</li>
+        <li><strong>Stage III</strong>: Local and/or regional spread (e.g., serosa/adnexa, vagina/parametrium, lymph nodes)</li>
+        <li><strong>Stage IV</strong>: Invasion of bladder/bowel mucosa and/or distant metastases</li>
+      </ul>
+      <p class="small">This is a simplified summary to aid orientation. Detailed staging requires clinical, imaging, and pathologic correlation.</p>
+      <div style="overflow:auto; margin-top: 0.75rem;">
+        <svg viewBox="0 0 900 200" width="100%" height="200" role="img" aria-label="FIGO staging overview diagram">
+          <defs>
+            <linearGradient id="stg1" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#ecfeff"/>
+              <stop offset="100%" stop-color="#eff6ff"/>
+            </linearGradient>
+            <linearGradient id="stg2" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#fff7ed"/>
+              <stop offset="100%" stop-color="#fffbeb"/>
+            </linearGradient>
+            <linearGradient id="stg3" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#f0fdf4"/>
+              <stop offset="100%" stop-color="#ecfdf5"/>
+            </linearGradient>
+            <linearGradient id="stg4" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#fef2f2"/>
+              <stop offset="100%" stop-color="#fee2e2"/>
+            </linearGradient>
+            <style>
+              .b { rx:12; ry:12; stroke:#cbd5e1; stroke-width:1; }
+              .t { font: 600 14px 'Segoe UI', Arial; fill:#0f172a; }
+              .d { font: 12px 'Segoe UI', Arial; fill:#334155; }
+              .a { stroke:#64748b; stroke-width:2; marker-end:url(#ah); }
+            </style>
+            <marker id="ah" orient="auto" markerWidth="8" markerHeight="8" refX="1.5" refY="2.5">
+              <path d="M0,0 L0,5 L5,2.5 z" fill="#64748b" />
+            </marker>
+          </defs>
+          <!-- Stage I -->
+          <rect class="b" x="20" y="30" width="200" height="130" fill="url(#stg1)"/>
+          <text class="t" x="35" y="55">Stage I</text>
+          <text class="d" x="35" y="80">Confined to uterus</text>
+          <text class="d" x="35" y="105">IA: superficial invasion</text>
+          <text class="d" x="35" y="125">IB: deep invasion</text>
+          <!-- Arrow -->
+          <line class="a" x1="220" y1="95" x2="270" y2="95"/>
+          <!-- Stage II -->
+          <rect class="b" x="270" y="30" width="200" height="130" fill="url(#stg2)"/>
+          <text class="t" x="285" y="55">Stage II</text>
+          <text class="d" x="285" y="80">Cervical stromal</text>
+          <text class="d" x="285" y="100">invasion</text>
+          <!-- Arrow -->
+          <line class="a" x1="470" y1="95" x2="520" y2="95"/>
+          <!-- Stage III -->
+          <rect class="b" x="520" y="30" width="200" height="130" fill="url(#stg3)"/>
+          <text class="t" x="535" y="55">Stage III</text>
+          <text class="d" x="535" y="80">Local/regional spread</text>
+          <text class="d" x="535" y="100">(serosa/adnexa, nodes)</text>
+          <!-- Arrow -->
+          <line class="a" x1="720" y1="95" x2="770" y2="95"/>
+          <!-- Stage IV -->
+          <rect class="b" x="770" y="30" width="200" height="130" fill="url(#stg4)"/>
+          <text class="t" x="785" y="55">Stage IV</text>
+          <text class="d" x="785" y="80">Bladder/bowel mucosa</text>
+          <text class="d" x="785" y="100">and/or distant mets</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section" id="normal">
+      <h2>Normal endometrium</h2>
+      <p>Physiologic patterns vary with hormonal status and cycle phase:</p>
+      <ul>
+        <li><strong>Proliferative</strong>: tubular glands, mitotic activity</li>
+        <li><strong>Secretory</strong>: subnuclear vacuoles, glandular secretions</li>
+        <li><strong>Atrophic</strong>: thin endometrium, sparse glands (common post-menopause)</li>
+      </ul>
+    </section>
+
+    <section class="section" id="polyp">
+      <h2>Endometrial polyp</h2>
+      <p>Localized overgrowth of endometrial glands and stroma forming a polypoidal lesion. Polyps can show variable histologic features including cystically dilated glands and fibrous stroma.</p>
+    </section>
+
+    <section class="section" id="hyperplasia">
+      <h2>Endometrial hyperplasia</h2>
+      <p>Hyperplasia describes increased gland-to-stroma ratio and architectural changes. It may be categorized as:</p>
+      <ul>
+        <li><strong>Without atypia</strong> — architectural complexity may be present, but no cytologic atypia.</li>
+        <li><strong>With atypia</strong> — cytologic atypia present; also termed AEH/EIN in many classifications and carries higher risk of progression to carcinoma.</li>
+      </ul>
+      <p class="note"><strong>Model limitation:</strong> The current model has limited or no training data for hyperplasia <em>with</em> atypia (AEH/EIN). As a result, predictions involving atypia may be unreliable. Future training with representative slides can improve this capability.</p>
+    </section>
+
+    
+
+    <section class="section" id="adenocarcinoma">
+      <h2>Endometrial adenocarcinoma</h2>
+      <p>Malignant epithelial neoplasm of the endometrium with gland-forming patterns. Histologic subtypes and grades exist; diagnosis and staging require a full clinicopathologic assessment.</p>
+    </section>
+
+    <section class="section" id="disclaimer">
+      <h2>Disclaimer</h2>
+      <p class="small">EndoAI is a research tool. It is not intended for diagnosis or treatment decisions. Always consult qualified healthcare professionals and institutional guidelines.</p>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    renderNavbar('about');
+    (async () => { try { const user = await getSession(); if (!user) window.location.href = 'login.html'; } catch(_) { window.location.href = 'login.html'; } })();
+  </script>
+</body>
+</html>

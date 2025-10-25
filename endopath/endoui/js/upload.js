@@ -49,19 +49,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     uploadBtn.textContent = 'Uploading...'
     try{
       const json = await API.postForm('/cases', fm)
-      const slideId = json.slide_id || json.id || 'unknown'
+      const caseId = json.id
+      const slideId = json.slide_id || caseId || 'unknown'
       showMessage('✅ Successfully uploaded! Slide ID: ' + slideId, 'success')
-      document.getElementById('result').innerHTML = `
-        <div style="margin-top: 1rem; padding: 1rem; background: #e8f5e9; border-radius: 4px; border-left: 4px solid #4caf50;">
-          <strong>Upload Complete!</strong>
-          <div style="margin-top: 0.5rem;">Slide ID: <strong>${slideId}</strong></div>
-          <div style="margin-top: 0.5rem;">
-            <a href="results.html" style="color: #2b7cff; font-weight: 600;">→ View Results</a>
-          </div>
-        </div>
-      `
-      // Reset form
-      form.reset()
+      
+      // Redirect to case details page to show confirmation and results
+      window.location.href = `case-detail.html?id=${caseId}`
     }catch(err){
       console.error('Upload error:', err)
       showMessage('Upload failed: '+err.message, 'error')

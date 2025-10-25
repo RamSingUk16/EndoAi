@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EndoAI — Help & Overview</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .section { background: var(--card); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.25rem; }
+    .section h2 { margin: 0 0 0.5rem 0; font-size: 1.35rem; }
+    .kvs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+    .kv { background: #f8fafc; border: 1px solid var(--border); padding: 0.75rem 1rem; border-radius: 6px; }
+    .kv strong { display: block; font-size: 0.9rem; color: var(--text-light); }
+    .kv span { font-size: 1.05rem; color: var(--text); }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #0f172a; color: #e2e8f0; padding: 0.75rem 1rem; border-radius: 6px; overflow: auto; }
+    .small { color: var(--text-light); font-size: 0.92rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 999px; background: #eef2ff; color: #3730a3; font-weight: 600; font-size: 0.85rem; border: 1px solid #c7d2fe; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <h1>Help & Overview</h1>
+      <p class="small">How EndoAI works, how to use it, and what the metrics mean.</p>
+    </div>
+
+    <!-- Three-layer architecture overview -->
+    <section class="section">
+      <h2>Three-layer architecture</h2>
+      <p class="small">High-level system view: the Client UI talks to the Server API; the Server consumes models produced by the Trainer.</p>
+      <div style="overflow:auto;">
+        <svg viewBox="0 0 900 180" width="100%" height="180" role="img" aria-label="Client UI to Server API to Trainer architecture">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#e0ecff"/>
+              <stop offset="100%" stop-color="#eef2ff"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#e6fffa"/>
+              <stop offset="100%" stop-color="#f0fdf4"/>
+            </linearGradient>
+            <linearGradient id="g3" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#fff7ed"/>
+              <stop offset="100%" stop-color="#fffbeb"/>
+            </linearGradient>
+            <style>
+              .box { rx:12; ry:12; stroke:#cbd5e1; stroke-width:1; }
+              .title { font: 600 14px 'Segoe UI', Arial; fill:#0f172a; }
+              .desc { font: 12px 'Segoe UI', Arial; fill:#334155; }
+              .arrow { stroke:#64748b; stroke-width:2; marker-end:url(#arrowHead); }
+            </style>
+            <marker id="arrowHead" orient="auto" markerWidth="8" markerHeight="8" refX="1.5" refY="2.5">
+              <path d="M0,0 L0,5 L5,2.5 z" fill="#64748b" />
+            </marker>
+          </defs>
+          <!-- Client -->
+          <rect class="box" x="30" y="30" width="240" height="120" fill="url(#g1)"/>
+          <text class="title" x="50" y="58">Client (UI)</text>
+          <text class="desc" x="50" y="80">• Static HTML/JS</text>
+          <text class="desc" x="50" y="98">• Pages: upload, results, case detail</text>
+          <text class="desc" x="50" y="116">• Calls FastAPI endpoints</text>
+          <!-- Server -->
+          <rect class="box" x="330" y="30" width="240" height="120" fill="url(#g2)"/>
+          <text class="title" x="350" y="58">Server (API)</text>
+          <text class="desc" x="350" y="80">• FastAPI + SQLite</text>
+          <text class="desc" x="350" y="98">• Auth, upload, inference, Grad-CAM</text>
+          <text class="desc" x="350" y="116">• Serves static UI & model info</text>
+          <!-- Trainer -->
+          <rect class="box" x="630" y="30" width="240" height="120" fill="url(#g3)"/>
+          <text class="title" x="650" y="58">Trainer (ML)</text>
+          <text class="desc" x="650" y="80">• TensorFlow/Keras (ResNet50)</text>
+          <text class="desc" x="650" y="98">• Produces model + metadata</text>
+          <text class="desc" x="650" y="116">• Long-running, CPU-bound</text>
+          <!-- Arrows -->
+          <line class="arrow" x1="270" y1="90" x2="330" y2="90"/>
+          <line class="arrow" x1="570" y1="90" x2="630" y2="90"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>What EndoAI does</h2>
+      <p>EndoAI analyzes endometrial pathology slide images and predicts one of four primary classes, with subtypes where applicable. It also produces a Grad-CAM heatmap to show the regions that most influenced the prediction.</p>
+      <div class="kvs">
+        <div class="kv"><strong>Primary classes</strong><span>NE, EP, EH, EA</span></div>
+        <div class="kv"><strong>Subtypes</strong><span>NE (3), EH (2)</span></div>
+        <div class="kv"><strong>Input</strong><span>JPEG, auto-resized to 224×224, ImageNet normalized</span></div>
+        <div class="kv"><strong>Outputs</strong><span>Prediction + per-class confidences + Grad-CAM</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Using the app</h2>
+      <ol>
+        <li>Go to <a href="upload.html">Upload</a> and select a JPEG (≤10MB).</li>
+        <li>Optionally fill metadata; keep “Generate Grad-CAM” checked.</li>
+        <li>Submit. You'll be redirected to the case details page once created.</li>
+        <li>Wait ~1–2 minutes (CPU) for analysis. Refresh the case page to see prediction, confidences, and the Grad-CAM overlay.</li>
+      </ol>
+      <p class="small">Tip: You can always review past analyses on the <a href="results.html">Results</a> page.</p>
+    </section>
+
+    <section class="section">
+      <h2>How predictions work</h2>
+      <ul>
+        <li>Images are resized to 224×224 and normalized with ImageNet mean/std.</li>
+        <li>The model is a multi-head ResNet50: a main head for the 4 primary classes, and additional heads for NE and EH subtypes.</li>
+        <li>We compute a Grad-CAM heatmap from the last convolutional block to visualize salient regions and overlay it on the original image.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Confidence vs. accuracy</h2>
+      <p>Confidence is the model's internal probability for the predicted class on a single image. It is <strong>not</strong> the same as overall accuracy. Overall model quality is measured on a held-out validation set.</p>
+      <div id="modelInfo" class="kvs"></div>
+      <p class="small">Interpretation guidance:
+        <br />• High confidence with low overall accuracy can still be wrong.
+        <br />• Use Grad-CAM to verify if highlighted regions match pathology expectations.
+        <br />• Treat results as research-use only unless validated clinically.</p>
+    </section>
+
+    <section class="section">
+      <h2>Training and operations</h2>
+      <ul>
+        <li><span class="badge">Training</span> Long-running job with two phases (initial + fine-tune). Do not restart servers while training is active.</li>
+        <li><span class="badge">Logs</span> The active trainer log is <code>program1-trainer/training_output.log</code>. Older logs may exist; the newest timestamp is the one to monitor.</li>
+        <li><span class="badge">Model updates</span> When training completes, the latest model and metadata are picked up by the server on restart. We will schedule a safe restart to avoid interrupting training.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li>Can't access pages? Make sure you're logged in (default admin/admin on first run).</li>
+        <li>Uploads failing? Check that the file is JPEG and under 10MB; see server logs for details.</li>
+        <li>No Grad-CAM? Ensure the checkbox was selected; large images may take longer.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>About</h2>
+      <p class="small">Stack: FastAPI backend, static HTML/JS frontend, TensorFlow/Keras for training and inference. Images are processed on CPU in this build.</p>
+    </section>
+
+    <!-- Deep dive sections: Trainer, Server, Client -->
+    <section class="section" id="trainer">
+      <h2>Trainer (ML pipeline)</h2>
+      <div class="kvs">
+        <div class="kv"><strong>Software</strong><span>Python 3.11, TensorFlow 2.15, Keras, NumPy</span></div>
+        <div class="kv"><strong>Location</strong><span>endopath/program1-trainer</span></div>
+        <div class="kv"><strong>Outputs</strong><span>Model .h5/.keras, *_metadata.json, training_output.log</span></div>
+      </div>
+      <p><strong>Architecture</strong></p>
+      <ul>
+        <li>Backbone: ResNet50 (ImageNet init)</li>
+        <li>Heads: main (NE/EP/EH/EA), NE subtypes (3), EH subtypes (2)</li>
+        <li>Preprocessing: resize 224×224, ImageNet normalization</li>
+      </ul>
+      <div class="code" aria-label="Trainer workflow diagram">
+        [Data] → [Augment/Load]
+          → [Phase 1 Train (frozen backbone)]
+          → [Phase 2 Fine-tune (unfrozen top blocks)]
+          → [Evaluate/Export Model + Metadata]
+      </div>
+      <p><strong>Workflow</strong></p>
+      <ol>
+        <li>Configure dataset and class weights in <code>config.yaml</code>.</li>
+        <li>Run <code>train.py</code> (long-running; do not stop mid-epoch).</li>
+        <li>Artifacts written to <code>program1-trainer/models</code> with a metadata JSON that includes validation metrics.</li>
+      </ol>
+    </section>
+
+    <section class="section" id="server">
+      <h2>Server (API)</h2>
+      <div class="kvs">
+        <div class="kv"><strong>Software</strong><span>FastAPI, Uvicorn, SQLite, bcrypt</span></div>
+        <div class="kv"><strong>Location</strong><span>endopath/endoserver/app</span></div>
+        <div class="kv"><strong>Key env</strong><span>MODEL_DIR, DB_PATH, STATIC_DIR</span></div>
+      </div>
+      <p><strong>Architecture</strong></p>
+      <ul>
+        <li>Routers: <code>auth.py</code>, <code>cases.py</code>, health/version/model-info in <code>main.py</code></li>
+        <li>Inference: <code>inference.py</code> (preprocess, predict multi-head, Grad-CAM)</li>
+        <li>DB schema and migrations: <code>db.py</code></li>
+        <li>Static UI mounted at root</li>
+      </ul>
+      <div class="code" aria-label="Server request workflow">
+        [Upload] → Save case → Background inference
+          → Predict + Grad-CAM → Update DB → Case detail page consumes results
+      </div>
+      <p><strong>Workflow</strong></p>
+      <ol>
+        <li>User authenticates; session cookie managed by server.</li>
+        <li>Client uploads JPEG to <code>/cases</code>; server stores image and enqueues inference.</li>
+        <li>Server reads latest model from <code>MODEL_DIR</code>, predicts, saves confidences and Grad-CAM, exposes via <code>/cases/{id}</code>.</li>
+      </ol>
+    </section>
+
+    <section class="section" id="client">
+      <h2>Client (UI)</h2>
+      <div class="kvs">
+        <div class="kv"><strong>Software</strong><span>Static HTML/CSS/JS</span></div>
+        <div class="kv"><strong>Location</strong><span>endopath/endoui</span></div>
+        <div class="kv"><strong>Key files</strong><span><code>index.html</code>, <code>upload.html</code>, <code>results.html</code>, <code>case-detail.html</code>, <code>js/*.js</code></span></div>
+      </div>
+      <p><strong>Architecture</strong></p>
+      <ul>
+        <li>API layer: <code>js/api.js</code>; auth/session: <code>js/auth.js</code>; navigation: <code>js/navbar.js</code></li>
+        <li>Accessible UI components styled via <code>css/styles.css</code></li>
+      </ul>
+      <div class="code" aria-label="Client workflow">
+        [Login] → [Upload Image] → [Redirect to Case Detail]
+          → [Poll/Refresh] → [Show Prediction + Grad-CAM] → [Review Results]
+      </div>
+      <p><strong>Workflow</strong></p>
+      <ol>
+        <li>User navigates via the top navbar and uploads a case.</li>
+        <li>On success, UI redirects to the case detail page.</li>
+        <li>UI fetches <code>/cases/{id}</code> and renders prediction, confidences, and Grad-CAM.</li>
+      </ol>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    // Initialize navbar and auth
+    renderNavbar('help');
+    (async () => {
+      try {
+        const user = await getSession();
+        if (!user) window.location.href = 'login.html';
+      } catch (_) { window.location.href = 'login.html'; }
+    })();
+
+    // Load model info to show current validation accuracy and status
+    (async function loadModelInfo() {
+      try {
+        const res = await fetch('/model/info');
+        const data = await res.json();
+        const c = document.getElementById('modelInfo');
+        if (!c) return;
+        const status = (data.status || 'unknown').toString();
+        const acc = (data.validation_accuracy != null) ? `${data.validation_accuracy}%` : 'N/A';
+        const ver = data.model_version || 'unknown';
+        const created = data.created_at ? new Date(data.created_at).toLocaleString() : 'unknown';
+        c.innerHTML = `
+          <div class="kv"><strong>Validation accuracy</strong><span>${acc}</span></div>
+          <div class="kv"><strong>Status</strong><span class="badge">${status}</span></div>
+          <div class="kv"><strong>Model version</strong><span>${ver}</span></div>
+          <div class="kv"><strong>Trained at</strong><span>${created}</span></div>
+        `;
+      } catch (e) {
+        // silent fail; page still useful without this info
+      }
+    })();
+  </script>
+</body>
+</html>

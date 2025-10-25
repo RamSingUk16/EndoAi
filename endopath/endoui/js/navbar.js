@@ -4,9 +4,15 @@ function renderNavbar(currentPage) {
     <nav class="navbar">
       <div class="navbar-content">
         <a href="index.html" class="navbar-brand">🔬 EndoAI</a>
-        <div class="navbar-user" id="navUser">
-          <span id="navUsername"></span>
-          <a href="#" onclick="logout(); return false;" style="color: white; margin-left: 1rem;">Logout</a>
+        <div class="navbar-right">
+          <ul class="navbar-nav">
+            <li><a href="about.html" class="${currentPage === 'about' ? 'active' : ''}">About</a></li>
+            <li><a href="technical.html" class="${currentPage === 'technical' ? 'active' : ''}">Technical</a></li>
+          </ul>
+          <div class="navbar-user" id="navUser">
+            <span id="navUsername"></span>
+            <a href="#" onclick="logout(); return false;" class="logout-link">Logout</a>
+          </div>
         </div>
       </div>
     </nav>

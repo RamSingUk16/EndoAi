@@ -85,8 +85,10 @@
     <div class="page-header">
       <h1>Case Details</h1>
       <p>Complete information for case <strong id="caseId"></strong></p>
-      <div style="margin-top: 1rem;">
+      <div style="margin-top: 1rem; display: flex; gap: 1rem;">
         <a href="results.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← Back to Results</a>
+        <span style="color: var(--border);">|</span>
+        <a href="upload.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Upload Another →</a>
       </div>
     </div>
 
@@ -131,29 +133,41 @@
               <div class="detail-label">Confidence:</div>
               <div class="detail-value" id="confidence"></div>
             </div>
+            <div id="confidenceExplanation" style="margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 4px; font-size: 0.9rem; line-height: 1.6;">
+              <strong>About Confidence:</strong><br>
+              The confidence score indicates how certain the AI model is about its prediction. However, <strong>high confidence does not guarantee accuracy</strong> if the model itself has low overall performance.
+            </div>
+          </div>
+
+          <div class="detail-section" id="modelInfoSection">
+            <h2>Model Information</h2>
+            <div class="detail-row">
+              <div class="detail-label">Model Accuracy:</div>
+              <div class="detail-value" id="modelAccuracy">Loading...</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Model Status:</div>
+              <div class="detail-value" id="modelStatus">Loading...</div>
+            </div>
+            <div id="modelWarning" style="display: none; margin-top: 1rem; padding: 1rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 0.9rem; line-height: 1.6;">
+              <strong>⚠️ Low Model Accuracy</strong><br>
+              The current model has low validation accuracy and is not yet suitable for clinical use. Predictions may be incorrect regardless of confidence scores. A new model is currently being trained to improve accuracy.
+            </div>
+            <div id="modelGood" style="display: none; margin-top: 1rem; padding: 1rem; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px; font-size: 0.9rem; line-height: 1.6;">
+              <strong>✓ Production-Ready Model</strong><br>
+              This model has achieved good validation accuracy and can provide reliable predictions for endometrial pathology classification.
+            </div>
           </div>
 
           <div class="detail-section">
             <h2>Clinical Information</h2>
             <div class="detail-row">
-              <div class="detail-label">Age Group:</div>
-              <div class="detail-value" id="ageGroup"></div>
+              <div class="detail-label">Age:</div>
+              <div class="detail-value" id="age"></div>
             </div>
             <div class="detail-row">
-              <div class="detail-label">Menstrual Phase:</div>
-              <div class="detail-value" id="menstrualPhase"></div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Magnification:</div>
-              <div class="detail-value" id="magnification"></div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Stain:</div>
-              <div class="detail-value" id="stain"></div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Notes:</div>
-              <div class="detail-value" id="notes"></div>
+              <div class="detail-label">Clinical History:</div>
+              <div class="detail-value" id="clinicalHistory"></div>
             </div>
           </div>
         </div>
@@ -218,26 +232,12 @@
         document.getElementById('prediction').textContent = caseData.prediction || 'Pending';
         document.getElementById('confidence').textContent = caseData.confidence ? (caseData.confidence * 100).toFixed(1) + '%' : 'N/A';
         
-        // Parse clinical history into separate fields
-        const clinicalHistory = caseData.clinical_history || '';
-        const ageGroupMatch = clinicalHistory.match(/Age group:\s*([^;]+)/);
-        const menstrualMatch = clinicalHistory.match(/Menstrual phase:\s*([^;]+)/);
-        const magnificationMatch = clinicalHistory.match(/Magnification:\s*([^;]+)/);
-        const stainMatch = clinicalHistory.match(/Stain:\s*([^;]+)/);
+        // Populate clinical information
+        document.getElementById('age').textContent = caseData.age || 'Not specified';
+        document.getElementById('clinicalHistory').textContent = caseData.clinical_history || 'No clinical history provided';
         
-        // Extract notes (everything after the structured fields)
-        let notes = clinicalHistory;
-        notes = notes.replace(/Age group:\s*[^;]+;\s*/g, '');
-        notes = notes.replace(/Menstrual phase:\s*[^;]+;\s*/g, '');
-        notes = notes.replace(/Magnification:\s*[^;]+;\s*/g, '');
-        notes = notes.replace(/Stain:\s*[^;]+;\s*/g, '');
-        notes = notes.trim();
-        
-        document.getElementById('ageGroup').textContent = ageGroupMatch ? ageGroupMatch[1].trim() : 'Not specified';
-        document.getElementById('menstrualPhase').textContent = menstrualMatch ? menstrualMatch[1].trim() : 'Not specified';
-        document.getElementById('magnification').textContent = magnificationMatch ? magnificationMatch[1].trim() : 'Not specified';
-        document.getElementById('stain').textContent = stainMatch ? stainMatch[1].trim() : 'Not specified';
-        document.getElementById('notes').textContent = notes || 'No notes provided';
+        // Load model metadata to show accuracy
+        loadModelMetadata();
         
         // Load original image
         const originalImg = document.getElementById('originalImage');
@@ -276,6 +276,47 @@
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
         document.getElementById('error').textContent = 'Failed to load case details: ' + err.message;
+      }
+    }
+    
+    async function loadModelMetadata() {
+      try {
+        // Fetch model metadata from the backend
+        const response = await fetch('/model/info');
+        const modelData = await response.json();
+        
+        const modelAccuracyElement = document.getElementById('modelAccuracy');
+        const modelStatusElement = document.getElementById('modelStatus');
+        const modelWarning = document.getElementById('modelWarning');
+        const modelGood = document.getElementById('modelGood');
+        
+        const modelAccuracy = modelData.validation_accuracy;
+        
+        if (modelAccuracy !== null && modelAccuracy !== undefined) {
+          modelAccuracyElement.textContent = modelAccuracy.toFixed(1) + '%';
+          
+          // Determine model status based on accuracy thresholds
+          if (modelAccuracy >= 85) {
+            modelStatusElement.innerHTML = '<span style="color: #4caf50; font-weight: 600;">Excellent</span>';
+            modelGood.style.display = 'block';
+          } else if (modelAccuracy >= 80) {
+            modelStatusElement.innerHTML = '<span style="color: #8bc34a; font-weight: 600;">Good</span>';
+            modelGood.style.display = 'block';
+          } else if (modelAccuracy >= 70) {
+            modelStatusElement.innerHTML = '<span style="color: #ff9800; font-weight: 600;">Moderate - Use with Caution</span>';
+            modelWarning.style.display = 'block';
+          } else {
+            modelStatusElement.innerHTML = '<span style="color: #f44336; font-weight: 600;">Low - Not Production Ready</span>';
+            modelWarning.style.display = 'block';
+          }
+        } else {
+          modelAccuracyElement.textContent = 'Unknown';
+          modelStatusElement.textContent = modelData.status || 'Unknown';
+        }
+      } catch (err) {
+        console.error('Could not load model metadata:', err);
+        document.getElementById('modelAccuracy').textContent = 'Unknown';
+        document.getElementById('modelStatus').textContent = 'Unknown';
       }
     }
   </script>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EndoAI — Technical</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .section { background: var(--card); padding: 1.25rem 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.25rem; scroll-margin-top: 80px; }
+    .small { color: var(--text-light); font-size: 0.95rem; }
+    .kvs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+    .kv { background: #f8fafc; border: 1px solid var(--border); padding: 0.75rem 1rem; border-radius: 6px; }
+    .kv strong { display: block; font-size: 0.9rem; color: var(--text-light); }
+    .kv span { font-size: 1.05rem; color: var(--text); }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #0f172a; color: #e2e8f0; padding: 0.75rem 1rem; border-radius: 6px; overflow: auto; }
+    .toc { background: #f8fafc; border: 1px solid var(--border); padding: 0.75rem 1rem; border-radius: 6px; }
+    .toc h2 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
+    .toc ul { margin: 0.25rem 0 0 0; padding-left: 1rem; }
+    .toc a { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <h1>Technical architecture</h1>
+      <p class="small">Three-layer system overview, component architecture, and ML/inference workflows.</p>
+    </div>
+
+    <div class="section toc">
+      <h2>On this page</h2>
+      <ul>
+        <li><a href="#overview">Three-layer architecture</a></li>
+        <li><a href="#trainer">Trainer</a></li>
+        <li><a href="#server">Server</a></li>
+        <li><a href="#client">Client</a></li>
+        <li><a href="#model-metrics">Confidence vs accuracy</a></li>
+      </ul>
+    </div>
+
+    <!-- Three-layer architecture overview -->
+    <section class="section" id="overview">
+      <h2>Three-layer architecture</h2>
+      <p class="small">Client UI ↔ Server API ↔ Trainer/Models</p>
+      <div style="overflow:auto;">
+        <svg viewBox="0 0 900 180" width="100%" height="180" role="img" aria-label="Client UI to Server API to Trainer architecture">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#e0ecff"/>
+              <stop offset="100%" stop-color="#eef2ff"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#e6fffa"/>
+              <stop offset="100%" stop-color="#f0fdf4"/>
+            </linearGradient>
+            <linearGradient id="g3" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#fff7ed"/>
+              <stop offset="100%" stop-color="#fffbeb"/>
+            </linearGradient>
+            <style>
+              .box { rx:12; ry:12; stroke:#cbd5e1; stroke-width:1; }
+              .title { font: 600 14px 'Segoe UI', Arial; fill:#0f172a; }
+              .desc { font: 12px 'Segoe UI', Arial; fill:#334155; }
+              .arrow { stroke:#64748b; stroke-width:2; marker-end:url(#arrowHead); }
+            </style>
+            <marker id="arrowHead" orient="auto" markerWidth="8" markerHeight="8" refX="1.5" refY="2.5">
+              <path d="M0,0 L0,5 L5,2.5 z" fill="#64748b" />
+            </marker>
+          </defs>
+          <!-- Client -->
+          <rect class="box" x="30" y="30" width="240" height="120" fill="url(#g1)"/>
+          <text class="title" x="50" y="58">Client (UI)</text>
+          <text class="desc" x="50" y="80">• Static HTML/JS</text>
+          <text class="desc" x="50" y="98">• upload/results/case-detail</text>
+          <text class="desc" x="50" y="116">• Calls FastAPI endpoints</text>
+          <!-- Server -->
+          <rect class="box" x="330" y="30" width="240" height="120" fill="url(#g2)"/>
+          <text class="title" x="350" y="58">Server (API)</text>
+          <text class="desc" x="350" y="80">• FastAPI + SQLite</text>
+          <text class="desc" x="350" y="98">• Auth, upload, inference</text>
+          <text class="desc" x="350" y="116">• Grad-CAM, static UI</text>
+          <!-- Trainer -->
+          <rect class="box" x="630" y="30" width="240" height="120" fill="url(#g3)"/>
+          <text class="title" x="650" y="58">Trainer (ML)</text>
+          <text class="desc" x="650" y="80">• TensorFlow/Keras</text>
+          <text class="desc" x="650" y="98">• Model + metadata</text>
+          <text class="desc" x="650" y="116">• Long-running job</text>
+          <!-- Arrows -->
+          <line class="arrow" x1="270" y1="90" x2="330" y2="90"/>
+          <line class="arrow" x1="570" y1="90" x2="630" y2="90"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section" id="trainer">
+      <h2>Trainer</h2>
+      <div class="kvs">
+        <div class="kv"><strong>Software</strong><span>Python 3.11, TensorFlow 2.15, Keras, NumPy</span></div>
+        <div class="kv"><strong>Location</strong><span>endopath/program1-trainer</span></div>
+        <div class="kv"><strong>Artifacts</strong><span>*.h5/*.keras, *_metadata.json, training_output.log</span></div>
+      </div>
+      <p><strong>Model architecture</strong></p>
+      <ul>
+        <li>Backbone: ResNet50 (ImageNet weights)</li>
+        <li>Heads: main (NE/EP/EH/EA); NE subtypes (3); EH subtypes (2)</li>
+        <li>Preprocessing: resize to 224×224; ImageNet mean/std normalization</li>
+      </ul>
+      <div class="code">
+        Phase 1: Train heads (backbone frozen)
+        Phase 2: Fine-tune top blocks (unfrozen)
+        Callbacks: early stopping, model save; class weights as configured
+      </div>
+      <p><strong>Workflow</strong></p>
+      <ol>
+        <li>Configure dataset and hyperparameters in config.yaml</li>
+        <li>Run train.py (CPU-bound and long-running)</li>
+        <li>Publish latest model + metadata to program1-trainer/models</li>
+      </ol>
+    </section>
+
+    <section class="section" id="server">
+      <h2>Server</h2>
+      <div class="kvs">
+        <div class="kv"><strong>Software</strong><span>FastAPI, Uvicorn, SQLite, bcrypt</span></div>
+        <div class="kv"><strong>Location</strong><span>endopath/endoserver/app</span></div>
+        <div class="kv"><strong>Env</strong><span>MODEL_DIR, DB_PATH, STATIC_DIR</span></div>
+      </div>
+      <p><strong>Components</strong></p>
+      <ul>
+        <li>Auth/router: auth.py; Cases: cases.py; Health/Version/Model info in main.py</li>
+        <li>Inference: inference.py preproc + multi-head predict + Grad-CAM overlay</li>
+        <li>DB: db.py schema, migrations, admin seeding</li>
+        <li>Serves static UI from STATIC_DIR</li>
+      </ul>
+      <div class="code">
+        Upload → Save case → Background inference → Predict + Grad-CAM → Update DB → UI fetches /cases/{id}
+      </div>
+      <p><strong>Operations</strong></p>
+      <ul>
+        <li>Training should not be interrupted by server restarts; schedule restarts post-training.</li>
+        <li>Active trainer log: program1-trainer/training_output.log</li>
+        <li>Model info endpoint: /model/info; Health: /health</li>
+      </ul>
+    </section>
+
+    <section class="section" id="client">
+      <h2>Client</h2>
+      <div class="kvs">
+        <div class="kv"><strong>Software</strong><span>Static HTML/CSS/JS</span></div>
+        <div class="kv"><strong>Location</strong><span>endopath/endoui</span></div>
+        <div class="kv"><strong>Key files</strong><span>index.html, upload.html, results.html, case-detail.html, js/*.js</span></div>
+      </div>
+      <p><strong>Patterns</strong></p>
+      <ul>
+        <li>api.js (fetch wrapper), auth.js (session), navbar.js (nav), utils.js</li>
+        <li>Upload redirects to case detail; case page renders prediction and Grad-CAM</li>
+      </ul>
+      <div class="code">
+        Login → Upload → Redirect to case → Fetch /cases/{id} → Render results and heatmap
+      </div>
+    </section>
+
+    <section class="section" id="model-metrics">
+      <h2>Confidence vs accuracy</h2>
+      <p>Confidence is the model's probability on a single image; overall model accuracy is measured on a separate validation set. High confidence does not guarantee correctness when validation accuracy is limited.</p>
+      <div id="modelInfo" class="kvs"></div>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    renderNavbar('technical');
+    (async () => { try { const user = await getSession(); if (!user) window.location.href = 'login.html'; } catch(_) { window.location.href = 'login.html'; } })();
+    (async function loadModelInfo(){ try { const r = await fetch('/model/info'); const d = await r.json(); const c = document.getElementById('modelInfo'); if (!c) return; const acc = (d.validation_accuracy!=null)? `${d.validation_accuracy}%`:'N/A'; const status = d.status||'unknown'; const ver = d.model_version||'unknown'; const created = d.created_at? new Date(d.created_at).toLocaleString():'unknown'; c.innerHTML = `
+      <div class="kv"><strong>Validation accuracy</strong><span>${acc}</span></div>
+      <div class="kv"><strong>Status</strong><span>${status}</span></div>
+      <div class="kv"><strong>Model version</strong><span>${ver}</span></div>
+      <div class="kv"><strong>Trained at</strong><span>${created}</span></div>`; } catch(e){} })();
+  </script>
+</body>
+</html>
