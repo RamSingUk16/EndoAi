@@ -1,25 +1,37 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>EndoAI — Upload</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
   <link rel="stylesheet" href="css/styles.css" />
 </head>
+
 <body>
   <main class="container">
     <div class="page-header">
       <h1>Upload Slide</h1>
       <p>Upload endometrial pathology images for AI-powered analysis</p>
       <div style="margin-top: 1rem;">
-        <a href="index.html" style="margin-right: 1rem; color: var(--accent); text-decoration: none; font-weight: 600;">← Home</a>
+        <a href="index.html"
+          style="margin-right: 1rem; color: var(--accent); text-decoration: none; font-weight: 600;">← Home</a>
         <a href="results.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">View Results →</a>
       </div>
     </div>
-    
+
     <form id="uploadForm">
       <label>Select JPEG (≤ 10MB)
         <input type="file" name="image" accept="image/jpeg" required />
+      </label>
+
+      <label>Model
+        <select name="model" id="modelSelect">
+          <option value="program3" selected>Program 3 (default)</option>
+          <option value="program1">Program 1</option>
+        </select>
       </label>
 
       <label>Specimen ID
@@ -77,4 +89,5 @@
     renderNavbar('upload');
   </script>
 </body>
+
 </html>

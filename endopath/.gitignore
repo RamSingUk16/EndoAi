@@ -1,0 +1,30 @@
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Databases and local state
+*.db
+*.sqlite3
+endoserver/app/endometrial.db
+endoserver/endometrial.db
+
+# Virtual environments
+venv/
+.venv/
+venv*/
+*/venv/
+*/.venv/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Logs and temp
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

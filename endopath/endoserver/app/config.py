@@ -20,7 +20,11 @@ if not _DEFAULT_MODEL_DIR:
 
 class Settings(BaseSettings):
     PORT: int = 8080
-    DB_PATH: str = "./endometrial.db"
+    # Use a stable, absolute default DB path inside the repo so relative CWD doesn't break auth
+    DB_PATH: str = os.environ.get(
+        "DB_PATH",
+        os.path.join(_BASE_DIR, "app", "endometrial.db"),
+    )
     MODEL_DIR: str = _DEFAULT_MODEL_DIR
     SESSION_TTL_MINUTES: int = 60
     # Default static dir: endopath/endoserver/static (can be changed via env)

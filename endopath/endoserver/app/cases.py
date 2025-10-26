@@ -5,7 +5,9 @@ import uuid
 from datetime import datetime
 from .db import get_conn
 from .auth import require_auth
-from .inference import process_case_background
+from .inference_strict import process_case_background, run_inference, ModelLoader
+import logging
+from fastapi import Query
 
 router = APIRouter()
 
@@ -19,6 +21,7 @@ async def upload_case(
     patient_id: str = Form(...),
     age: Optional[int] = Form(None),
     clinical_history: Optional[str] = Form(None),
+    model: str = Form('program3'),
     gradcam: str = Form('auto'),
     user: dict = Depends(require_auth)
 ):
@@ -49,6 +52,13 @@ async def upload_case(
     # Validate gradcam parameter
     if gradcam not in ['auto', 'on', 'off']:
         raise HTTPException(status_code=400, detail='gradcam must be "auto", "on", or "off"')
+    # Validate model selection
+    if model not in ['program3', 'program1']:
+        raise HTTPException(status_code=400, detail='model must be "program3" or "program1"')
+    # STRICT: ensure the requested model actually exists on this server
+    ml = ModelLoader()
+    if not ml._discover_model_path(model):
+        raise HTTPException(status_code=503, detail=f"Requested model '{model}' is not available on the server")
     
     # Debug logging
     print(f"DEBUG: Uploading case - patient_id={patient_id}, age={age}, clinical_history={clinical_history}")
@@ -65,9 +75,9 @@ async def upload_case(
         cur.execute('''
             INSERT INTO cases (
                 id, user_id, slide_id, patient_id, age, 
-                clinical_history, image_data, filename,
+                clinical_history, image_data, filename, model,
                 gradcam_requested, status, uploaded_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             case_id,
             user['id'],
@@ -77,6 +87,7 @@ async def upload_case(
             clinical_history,
             contents,
             file.filename,
+            model,
             gradcam,
             'pending',
             datetime.utcnow().isoformat()
@@ -96,6 +107,56 @@ async def upload_case(
         'message': 'Case uploaded successfully'
     }
 
+
+@router.post('/cases/reevaluate')
+def reevaluate_cases(
+    background_tasks: BackgroundTasks,
+    scope: str = Query('all', pattern='^(all|failed|completed|pending)$'),
+    model: Optional[str] = Query(None),
+    user: dict = Depends(require_auth)
+):
+    """Re-evaluate cases and update predictions using the selected model.
+
+    - scope: all | failed | completed | pending
+    - model: program3 | program1 (optional; default uses case.model or program3)
+    Admin only.
+    """
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail='Admin only')
+
+    if model and model not in ['program3', 'program1']:
+        raise HTTPException(status_code=400, detail='model must be "program3" or "program1"')
+    if model:
+        # STRICT: pre-validate the requested model exists
+        ml = ModelLoader()
+        if not ml._discover_model_path(model):
+            raise HTTPException(status_code=503, detail=f"Requested model '{model}' is not available on the server")
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    where = ''
+    if scope == 'failed':
+        where = "WHERE status='failed'"
+    elif scope == 'completed':
+        where = "WHERE status='completed'"
+    elif scope == 'pending':
+        where = "WHERE status='pending'"
+
+    cur.execute(f"SELECT id FROM cases {where}")
+    ids = [row[0] for row in cur.fetchall()]
+
+    def _batch(ids_local, model_key):
+        lg = logging.getLogger(__name__)
+        for cid in ids_local:
+            try:
+                run_inference(cid, model_override=model_key)
+            except Exception as e:
+                lg.error(f"Re-eval failed for {cid}: {e}")
+
+    background_tasks.add_task(_batch, ids, model)
+
+    return {"status": "accepted", "count": len(ids), "scope": scope, "model": model or "case-default"}
 
 
 @router.get('/cases/{case_id}')

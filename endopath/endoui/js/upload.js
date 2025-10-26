@@ -1,19 +1,19 @@
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('uploadForm')
   if (!form) return
-  form.addEventListener('submit', async (e)=>{
+  form.addEventListener('submit', async (e) => {
     e.preventDefault()
     const uploadBtn = document.getElementById('uploadBtn')
     const f = form.querySelector('input[type=file]')
     const file = f.files[0]
     if (!file) return showMessage('Please choose a file', 'error')
-    if (file.size > 10*1024*1024) return showMessage('File too large (max 10MB)', 'error')
+    if (file.size > 10 * 1024 * 1024) return showMessage('File too large (max 10MB)', 'error')
 
     // collect metadata - updated to match backend API
     const fm = new FormData()
     fm.append('file', file)  // Backend expects 'file'
     fm.append('patient_id', form.specimen_id.value || 'UNKNOWN')  // Backend expects 'patient_id'
-    
+
     // Map age_group to clinical_history since backend expects numeric age
     const historyParts = []
     if (form.age_group && form.age_group.value !== 'unknown') {
@@ -37,7 +37,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     const gradcam = form.gradcam && form.gradcam.checked ? 'on' : 'auto'
     fm.append('gradcam', gradcam)
-    
+    // model selection (default program3)
+    if (form.model && form.model.value) {
+      fm.append('model', form.model.value)
+    } else {
+      fm.append('model', 'program3')
+    }
+
     // Debug: log what we're sending
     console.log('Uploading with FormData:')
     for (let pair of fm.entries()) {
@@ -47,18 +53,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // disable UI while uploading
     uploadBtn.disabled = true
     uploadBtn.textContent = 'Uploading...'
-    try{
+    try {
       const json = await API.postForm('/cases', fm)
       const caseId = json.id
       const slideId = json.slide_id || caseId || 'unknown'
       showMessage('✅ Successfully uploaded! Slide ID: ' + slideId, 'success')
-      
+
       // Redirect to case details page to show confirmation and results
       window.location.href = `case-detail.html?id=${caseId}`
-    }catch(err){
+    } catch (err) {
       console.error('Upload error:', err)
-      showMessage('Upload failed: '+err.message, 'error')
-    }finally{
+      showMessage('Upload failed: ' + err.message, 'error')
+    } finally {
       uploadBtn.disabled = false
       uploadBtn.textContent = 'Upload'
     }

@@ -4,8 +4,10 @@ python-multipart
 bcrypt
 python-dotenv
 pydantic
+pydantic-settings
 jinja2
 weasyprint
 Pillow
-numpy
+numpy==1.26.4
 tensorflow==2.15.*
+matplotlib
